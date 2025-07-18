@@ -47,7 +47,7 @@ pipeline{
 
                         docker build -t gcr.io/${GCP_PROJECT}/mlops-project-1 .
 
-                        docker push gcr.io/${GCP_PROJECT}/mlops-project-1
+                        docker push gcr.io/${GCP_PROJECT}/mlops-project-1 
                         '''
                     }
                 }
