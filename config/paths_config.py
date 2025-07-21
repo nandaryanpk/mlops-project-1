@@ -21,4 +21,4 @@ PROCESSED_TEST_DATA_PATH = os.path.join(PROCESSED_DIR, "processed_test.csv")
 
 
 ############ MODEL TRAINING SECTION ###############
-MODEL_OUTPUT_PATH = "artifacts/models/lgbm_model.pkl"
+MODEL_OUTPUT_PATH = "artifacts/models/xgboost_model.pkl"

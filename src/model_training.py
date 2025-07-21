@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import joblib
 from sklearn.model_selection import RandomizedSearchCV
-import lightgbm as lgb
+from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from src.logger import get_logger
 from src.custom_exception import CustomException
@@ -24,7 +24,7 @@ class ModelTraining:
         self.test_path = test_path
         self.model_output_path = model_output_path
 
-        self.params_dist = LIGHTGBM_PARAMS
+        self.params_dist = XGBOOST_PARAMS
         self.random_search_params = RANDOM_SEARCH_PARAMS
 
     def load_and_split_data(self):
@@ -49,16 +49,16 @@ class ModelTraining:
             logger.error("f Error while loading data {e}")
             raise CustomException("Failed to load data", e)
         
-    def train_lgbm(self, X_train, y_train):
+    def train_xgboost(self, X_train, y_train):
         try:
             logger.info("Initializing our model")
-
-            lgbm_model = lgb.LGBMClassifier(random_state=self.random_search_params["random_state"])
+            
+            xgboost_model = XGBClassifier(random_state=self.random_search_params["random_state"])
 
             logger.info("Starting our hyperparameter tuning")
 
             random_search = RandomizedSearchCV(
-                estimator=lgbm_model,
+                estimator=xgboost_model,
                 param_distributions=self.params_dist,
                 n_iter=self.random_search_params["n_iter"],
                 cv=self.random_search_params["cv"],
@@ -75,11 +75,11 @@ class ModelTraining:
             logger.info("Hyperparameter tuning completed")
 
             best_params = random_search.best_params_
-            best_lgbm_model = random_search.best_estimator_
+            best_xgboost_model = random_search.best_estimator_
 
             logger.info(f"Best parameters are {best_params}")
 
-            return best_lgbm_model
+            return best_xgboost_model
         
         except Exception as e:
             logger.error("f Error while training model {e}")
@@ -137,15 +137,15 @@ class ModelTraining:
                 mlflow.log_artifact(self.test_path, artifact_path="datasets")
 
                 X_train, y_train, X_test, y_test = self.load_and_split_data()
-                best_lgbm_model = self.train_lgbm(X_train, y_train)
-                metrics = self.evaluate_model(best_lgbm_model, X_test, y_test)
-                self.save_model(best_lgbm_model)
+                best_xgboost_model = self.train_xgboost(X_train, y_train)
+                metrics = self.evaluate_model(best_xgboost_model, X_test, y_test)
+                self.save_model(best_xgboost_model)
 
                 logger.info("Logging the model into MLFLOW")
                 mlflow.log_artifact(self.model_output_path)
 
                 logger.info("Logging params and metrics into MLFLOW")
-                mlflow.log_params(best_lgbm_model.get_params())
+                mlflow.log_params(best_xgboost_model.get_params())
                 mlflow.log_metrics(metrics)
 
                 logger.info("Model training completed")
