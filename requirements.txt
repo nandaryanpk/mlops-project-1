@@ -7,3 +7,4 @@ imbalanced-learn
 mlflow
 flask
 xgboost
+gunicorn
